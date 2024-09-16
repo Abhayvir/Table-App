@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableSelectionChangeEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { OverlayPanel } from 'primereact/overlaypanel';
-import { InputNumber } from 'primereact/inputnumber';
+import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
@@ -69,6 +69,10 @@ const DataTablePage: React.FC = () => {
     return date ? date.toString() : 'N/A';
   };
 
+  const handleCustomRowCountChange = (e: InputNumberChangeEvent) => {
+    setCustomRowCount(e.value !== null ? e.value : null);
+  };
+
   const headerTemplate = useMemo(() => {
     return (
       <div className="flex align-items-center">
@@ -87,11 +91,11 @@ const DataTablePage: React.FC = () => {
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
-        <OverlayPanel ref={op} appendTo={document.body} showCloseIcon>
+        <OverlayPanel ref={op} appendTo={typeof window !== 'undefined' ? document.body : null} showCloseIcon>
           <div className="p-2">
             <InputNumber 
               value={customRowCount} 
-              onValueChange={(e) => setCustomRowCount(e.value)}
+              onValueChange={handleCustomRowCountChange}
               placeholder="Enter number of rows"
               min={0}
               max={artworks.length}
@@ -113,6 +117,10 @@ const DataTablePage: React.FC = () => {
     );
   }, [customRowCount, artworks.length]);
 
+  const handleSelectionChange = (e: DataTableSelectionChangeEvent<ArtworkItem[]>) => {
+    setSelectedArtworks(e.value);
+  };
+
   return (
     <div className="m-4 p-4">
       <DataTable 
@@ -122,7 +130,7 @@ const DataTablePage: React.FC = () => {
         loading={loading} 
         responsiveLayout="scroll"
         selection={selectedArtworks}
-        onSelectionChange={(e) => setSelectedArtworks(e.value)}
+        onSelectionChange={handleSelectionChange}
       >
         <Column selectionMode="multiple" headerStyle={{width: '3em'}} header={headerTemplate}></Column>
         <Column field="title" header="Title" sortable></Column>
