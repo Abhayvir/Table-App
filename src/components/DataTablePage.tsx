@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { DataTable, DataTableSelectionChangeEvent } from 'primereact/datatable';
+import { DataTable, DataTableStateEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { OverlayPanel } from 'primereact/overlaypanel';
-import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
+import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
@@ -14,8 +14,8 @@ interface ArtworkItem {
   place_of_origin: string;
   artist_display: string;
   inscriptions: string | null;
-  date_start: number;
-  date_end: number;
+  date_start: number | null;
+  date_end: number | null;
 }
 
 interface APIResponse {
@@ -65,12 +65,12 @@ const DataTablePage: React.FC = () => {
     setSelectedArtworks(artworks.slice(0, count));
   };
 
-  const formatDate = (date: number): string => {
-    return date ? date.toString() : 'N/A';
+  const formatDate = (date: number | null): string => {
+    return date !== null ? date.toString() : 'N/A';
   };
 
-  const handleCustomRowCountChange = (e: InputNumberChangeEvent) => {
-    setCustomRowCount(e.value !== null ? e.value : null);
+  const handleCustomRowCountChange = (e: InputNumberValueChangeEvent) => {
+    setCustomRowCount(e.value);
   };
 
   const headerTemplate = useMemo(() => {
@@ -91,7 +91,7 @@ const DataTablePage: React.FC = () => {
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
-        <OverlayPanel ref={op} appendTo={typeof window !== 'undefined' ? document.body : null} showCloseIcon>
+        <OverlayPanel ref={op}>
           <div className="p-2">
             <InputNumber 
               value={customRowCount} 
@@ -117,8 +117,8 @@ const DataTablePage: React.FC = () => {
     );
   }, [customRowCount, artworks.length]);
 
-  const handleSelectionChange = (e: DataTableSelectionChangeEvent<ArtworkItem[]>) => {
-    setSelectedArtworks(e.value);
+  const handleSelectionChange = (e: DataTableStateEvent) => {
+    setSelectedArtworks(e.selection as ArtworkItem[]);
   };
 
   return (
