@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { DataTable, DataTableStateEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { OverlayPanel } from 'primereact/overlaypanel';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
+import { InputNumber } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
@@ -14,8 +14,8 @@ interface ArtworkItem {
   place_of_origin: string;
   artist_display: string;
   inscriptions: string | null;
-  date_start: number | null;
-  date_end: number | null;
+  date_start: number;
+  date_end: number;
 }
 
 interface APIResponse {
@@ -65,12 +65,8 @@ const DataTablePage: React.FC = () => {
     setSelectedArtworks(artworks.slice(0, count));
   };
 
-  const formatDate = (date: number | null): string => {
-    return date !== null ? date.toString() : 'N/A';
-  };
-
-  const handleCustomRowCountChange = (e: InputNumberValueChangeEvent) => {
-    setCustomRowCount(e.value);
+  const formatDate = (date: number): string => {
+    return date ? date.toString() : 'N/A';
   };
 
   const headerTemplate = useMemo(() => {
@@ -91,11 +87,12 @@ const DataTablePage: React.FC = () => {
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
-        <OverlayPanel ref={op}>
+        <OverlayPanel ref={op} appendTo={document.body} showCloseIcon>
           <div className="p-2">
             <InputNumber 
               value={customRowCount} 
-              onValueChange={handleCustomRowCountChange}
+              // @ts-ignore
+              onValueChange={(e) => setCustomRowCount(e.value)}
               placeholder="Enter number of rows"
               min={0}
               max={artworks.length}
@@ -116,7 +113,6 @@ const DataTablePage: React.FC = () => {
       </div>
     );
   }, [customRowCount, artworks.length]);
-
   const handleSelectionChange = (e: DataTableStateEvent) => {
     setSelectedArtworks(e.selection as ArtworkItem[]);
   };
@@ -128,9 +124,11 @@ const DataTablePage: React.FC = () => {
         paginator 
         rows={ROWS_PER_PAGE}
         loading={loading} 
-        responsiveLayout="scroll"
+        selectionMode="multiple"
         selection={selectedArtworks}
+        // @ts-ignore
         onSelectionChange={handleSelectionChange}
+        dataKey="id"
       >
         <Column selectionMode="multiple" headerStyle={{width: '3em'}} header={headerTemplate}></Column>
         <Column field="title" header="Title" sortable></Column>
