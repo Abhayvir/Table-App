@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { DataTable, DataTableStateEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { OverlayPanel } from 'primereact/overlaypanel';
-import { InputNumber } from 'primereact/inputnumber';
+import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
@@ -69,6 +69,11 @@ const DataTablePage: React.FC = () => {
     return date ? date.toString() : 'N/A';
   };
 
+  const handleCustomRowCountChange = (e: InputNumberValueChangeEvent) => {
+    // @ts-ignore
+    setCustomRowCount(e.value);
+  };
+
   const headerTemplate = useMemo(() => {
     return (
       <div className="flex align-items-center">
@@ -87,12 +92,11 @@ const DataTablePage: React.FC = () => {
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
-        <OverlayPanel ref={op} appendTo={document.body} showCloseIcon>
+        <OverlayPanel ref={op}>
           <div className="p-2">
             <InputNumber 
               value={customRowCount} 
-              // @ts-ignore
-              onValueChange={(e) => setCustomRowCount(e.value)}
+              onValueChange={handleCustomRowCountChange}
               placeholder="Enter number of rows"
               min={0}
               max={artworks.length}
@@ -113,8 +117,9 @@ const DataTablePage: React.FC = () => {
       </div>
     );
   }, [customRowCount, artworks.length]);
+
   const handleSelectionChange = (e: DataTableStateEvent) => {
-    setSelectedArtworks(e.selection as ArtworkItem[]);
+    setSelectedArtworks(e.value as ArtworkItem[]);
   };
 
   return (
@@ -124,11 +129,11 @@ const DataTablePage: React.FC = () => {
         paginator 
         rows={ROWS_PER_PAGE}
         loading={loading} 
-        selectionMode="multiple"
+        responsiveLayout="scroll"
         selection={selectedArtworks}
         // @ts-ignore
         onSelectionChange={handleSelectionChange}
-        dataKey="id"
+        selectionMode="multiple"
       >
         <Column selectionMode="multiple" headerStyle={{width: '3em'}} header={headerTemplate}></Column>
         <Column field="title" header="Title" sortable></Column>
